@@ -3,6 +3,7 @@ import {
   View,
   TouchableOpacity,
   Text,
+  Picker,
   ScrollView,
   TextInput,
   StyleSheet,
@@ -158,36 +159,22 @@ export default function Home({ navigation }) {
     );
   }
 
-  function AutocompleteField({
-    placeholder,
-    textError,
-    autoFocus,
-    onChangeText,
-  }) {
+  function AutocompleteField({ textError }) {
+    function getAuthors() {
+      const arr = allAuthors.map((item) => {
+        return <Picker.Item label={item} value={item} />;
+      });
+      return arr;
+    }
     return (
       <>
-        <Autocomplete
-          data={data}
-          defaultValue={author}
-          placeholder={placeholder}
-          autoFocus={editing}
-          onTouchStart={() => setEditing(true)}
-          onChangeText={onChangeText}
-          onEndEditing={() => setEditing(false)}
-          keyExtractor={(_, index) => index.toString()}
-          listContainerStyle={styles.listContainer}
-          style={
-            textError ? [styles.textField, styles.error] : styles.textField
-          }
-          containerStyle={{ borderWidth: 0 }}
-          inputContainerStyle={{ borderWidth: 0 }}
-          hideResults={!editing}
-          renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => onChangeText(item)}>
-              <Text>{item}</Text>
-            </TouchableOpacity>
-          )}
-        />
+        <Picker
+          selectedValue={author}
+          onValueChange={(itemValue, itemIndex) => setAuthor(itemValue)}
+        >
+          <Picker.Item label="Selecione o autor" value="" />
+          {getAuthors()}
+        </Picker>
         <ErrorText textError={textError} />
       </>
     );
@@ -249,11 +236,7 @@ export default function Home({ navigation }) {
         textError={errorTitle}
       />
 
-      <AutocompleteField
-        placeholder="Autor"
-        onChangeText={setAuthor}
-        textError={errorAuthor}
-      />
+      <AutocompleteField textError={errorAuthor} />
 
       <TouchableOpacity onPress={() => setDatePicker(true)}>
         <View pointerEvents="none">

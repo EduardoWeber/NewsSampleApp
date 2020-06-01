@@ -41,9 +41,17 @@ export default function Home({ navigation }) {
   }
 
   React.useLayoutEffect(() => {
-    navigation.dangerouslyGetParent().setOptions({
-      headerRight: () => <Search callbackFunc={updateSearch} />,
+    const unsubscribe = navigation.addListener('focus', () => {
+      const parentNavigation = navigation.dangerouslyGetParent();
+      if (parentNavigation) {
+        parentNavigation.setOptions({
+          headerRight: () => <Search callbackFunc={updateSearch} />,
+        });
+      }
     });
+    return () => {
+      navigation.removeListener(unsubscribe);
+    };
   }, []);
 
   return (

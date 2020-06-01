@@ -9,20 +9,11 @@ import {
   StyleSheet,
   Button,
 } from 'react-native';
-import Autocomplete from 'react-native-autocomplete-input';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import ImagePicker from 'react-native-image-picker';
 import ImageEditor from '@react-native-community/image-editor';
-import AutoHeightImage from 'react-native-auto-height-image';
 import RNFS from 'react-native-fs';
-
-export function ErrorText({ textError }) {
-  return (
-    <View style={styles.errorContainer}>
-      {textError ? <Text style={styles.errorText}>{textError}</Text> : <></>}
-    </View>
-  );
-}
+import ImageCover from '../components/ImageCover';
+import ErrorText from '../components/ErrorText';
 
 export function TextField({
   placeholder,
@@ -94,18 +85,6 @@ export default function Home({ navigation }) {
     return '';
   }
 
-  function getImage() {
-    if (image.length) {
-      return (
-        <AutoHeightImage
-          source={{ uri: `data:image/gif;base64,${image}` }}
-          width={140}
-        />
-      );
-    }
-    return <View style={styles.imagePreview} />;
-  }
-
   function callbackImagePicker(response) {
     if (response && !response.didCancel && !response.error) {
       setImage(response.data);
@@ -132,31 +111,6 @@ export default function Home({ navigation }) {
         });
       });
     }
-  }
-
-  function ImageCover({ textError }) {
-    return (
-      <>
-        <View style={styles.coverInput}>
-          {getImage()}
-          <View style={styles.buttonContainer}>
-            <Button
-              title="SELECIONAR CAPA"
-              onPress={() =>
-                ImagePicker.launchImageLibrary(
-                  {
-                    tintColor: 'grey',
-                    mediaType: 'photo',
-                  },
-                  callbackImagePicker
-                )
-              }
-            />
-          </View>
-        </View>
-        <ErrorText textError={textError} />
-      </>
-    );
   }
 
   function AutocompleteField({ textError }) {
@@ -254,7 +208,11 @@ export default function Home({ navigation }) {
         />
       )}
 
-      <ImageCover textError={errorCover} />
+      <ImageCover
+        callbackImagePicker={callbackImagePicker}
+        image={image}
+        textError={errorCover}
+      />
 
       <TextInput
         style={styles.textArea}
@@ -293,25 +251,6 @@ const styles = StyleSheet.create({
   },
   error: {
     borderBottomColor: 'red',
-  },
-  errorContainer: {
-    marginTop: 1,
-    marginLeft: 5,
-    height: 15,
-  },
-  imagePreview: {
-    backgroundColor: '#757575',
-    width: 140,
-    height: 80,
-  },
-  coverInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  errorText: {
-    fontSize: 10,
-    color: 'red',
   },
   listContainer: {
     position: 'absolute',

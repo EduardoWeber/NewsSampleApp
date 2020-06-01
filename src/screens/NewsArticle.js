@@ -40,7 +40,9 @@ export default function NewsArticle({ route, navigation }) {
 
 const styles = StyleSheet.create({
   textMargin: {
+    marginTop: 10,
     marginHorizontal: 16,
+    fontSize: 14,
   },
   title: {
     fontSize: 20,

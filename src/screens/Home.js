@@ -39,8 +39,8 @@ export default function Home({ navigation }) {
   }
 
   React.useLayoutEffect(() => {
-    setSearchText('');
     const unsubscribe = navigation.addListener('focus', () => {
+      setSearchText('');
       const parentNavigation = navigation.dangerouslyGetParent();
       if (parentNavigation) {
         parentNavigation.setOptions({

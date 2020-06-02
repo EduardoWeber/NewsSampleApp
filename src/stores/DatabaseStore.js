@@ -1,6 +1,6 @@
 import { openDatabase } from 'react-native-sqlite-storage';
 // import { action } from 'mobx-react';
-import { observable, action, computed } from 'mobx';
+import { observable, action } from 'mobx';
 import RNFS from 'react-native-fs';
 
 class DatabaseStore {
@@ -66,7 +66,7 @@ class DatabaseStore {
   loadAuthors() {
     this.db.transaction((txn) => {
       txn.executeSql(`SELECT * FROM 'authors'`, [], (_, results) => {
-        for (let i = 0; i < results.rows.length; i++) {
+        for (let i = 0; i < results.rows.length; i += 1) {
           const row = results.rows.item(i);
           this.insertStoreAuthor(row.id, row.name, row.enabled);
         }
@@ -75,19 +75,20 @@ class DatabaseStore {
   }
 
   getAuthorById(id) {
-    for (let i = 0; i < this.authorsList.length; i++) {
+    for (let i = 0; i < this.authorsList.length; i += 1) {
       const author = this.authorsList[i];
       if (author.id === id) {
         return author;
       }
     }
+    return null;
   }
 
   loadNews() {
     console.log('News');
     this.db.transaction((txn) => {
       txn.executeSql(`SELECT * FROM 'news'`, [], (_, results) => {
-        for (let i = 0; i < results.rows.length; i++) {
+        for (let i = 0; i < results.rows.length; i += 1) {
           const row = results.rows.item(i);
           const author = this.getAuthorById(row.author);
           this.insertStoreNews(
@@ -274,7 +275,8 @@ class DatabaseStore {
 
   @action insertDummyAuthors() {
     const authors = ['Isabel P', 'Eduardo F', 'Luis M', 'Hugo L', 'Lucas M'];
-    authors.map((author) => {
+    for (let i = 0; i < authors.length; i += 1) {
+      const author = authors[i];
       this.db.transaction((txn) => {
         txn.executeSql(
           `INSERT INTO "main"."authors" ("name", "enabled") VALUES (?, '1');`,
@@ -298,7 +300,7 @@ class DatabaseStore {
           }
         );
       });
-    });
+    }
   }
 }
 

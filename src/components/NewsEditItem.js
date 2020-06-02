@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, StyleSheet, Image, View, Dimensions } from 'react-native';
+import { Text, StyleSheet, Image, View } from 'react-native';
 import ImageEditor from '@react-native-community/image-editor';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 

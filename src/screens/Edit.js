@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   TouchableOpacity,
-  Text,
   Picker,
   ScrollView,
   TextInput,
@@ -109,7 +108,7 @@ export default function Home({ navigation, route }) {
           {() => (
             <Picker
               selectedValue={author}
-              onValueChange={(itemValue, itemIndex) => setAuthor(itemValue)}
+              onValueChange={(itemValue) => setAuthor(itemValue)}
             >
               <Picker.Item label="Selecione o autor" value={null} />
               {getAuthors()}

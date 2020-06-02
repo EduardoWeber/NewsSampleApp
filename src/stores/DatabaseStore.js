@@ -101,6 +101,7 @@ class DatabaseStore {
             row.image
           );
         }
+        this.sortNews();
       });
     });
   }

@@ -51,6 +51,7 @@ export default function Home({ navigation, route }) {
   const [errorTitle, setErrorTitle] = useState('');
   const [errorAuthor, setErrorAuthor] = useState('');
   const [errorCover, setErrorCover] = useState('');
+  const [errorDesc, setErrorDesc] = useState('');
   const [errorForm, setErrorForm] = useState('');
 
   useEffect(() => {
@@ -142,6 +143,13 @@ export default function Home({ navigation, route }) {
       setErrorCover('');
     }
 
+    if (!desc.length) {
+      setErrorDesc('Descrição da noticia é um campo obrigatório');
+      errorCount += 1;
+    } else {
+      setErrorDesc('');
+    }
+
     if (errorCount) {
       setErrorForm('Houve algum erro no formulário');
       return false;
@@ -194,7 +202,7 @@ export default function Home({ navigation, route }) {
         multiline
         onChangeText={setDesc}
       />
-      <ErrorText textError={errorForm} />
+      <ErrorText textError={errorDesc} />
       <Button
         color="#264653"
         title={id !== null ? 'Alterar' : 'Postar'}
@@ -210,6 +218,7 @@ export default function Home({ navigation, route }) {
           }
         }}
       />
+      <ErrorText textError={errorForm} />
     </ScrollView>
   );
 }
@@ -234,7 +243,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: 'flex-start',
     textAlignVertical: 'top',
-    marginBottom: 16,
     minHeight: 200,
   },
   error: {

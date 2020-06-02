@@ -10,10 +10,10 @@ import {
   Button,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import ImageEditor from '@react-native-community/image-editor';
-import RNFS from 'react-native-fs';
+import { Observer } from 'mobx-react';
 import ImageCover from '../components/ImageCover';
 import ErrorText from '../components/ErrorText';
+import DatabaseStore from '../stores/DatabaseStore';
 
 export function TextField({
   placeholder,
@@ -38,14 +38,11 @@ export function TextField({
   );
 }
 
-export default function Home({ navigation }) {
-  const [query, setQuery] = useState('');
-  const [data, setData] = useState([]);
-  const [editing, setEditing] = useState(false);
+export default function Home({ navigation, route }) {
   const [datePicker, setDatePicker] = useState(false);
+  const [id, setId] = useState(null);
   // Forms image
   const [image, setImage] = useState('');
-  const [imageCropped, setImageCropped] = useState('');
   // Forms
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
@@ -57,18 +54,26 @@ export default function Home({ navigation }) {
   const [errorCover, setErrorCover] = useState('');
   const [errorForm, setErrorForm] = useState('');
 
-  const allAuthors = ['item1', 'item2', 'item3'];
-
-  function filterData(_query) {
-    const newData = allAuthors.filter((item) => {
-      return item.toLocaleLowerCase().includes(_query.toLocaleLowerCase());
-    });
-    setData(newData);
-  }
-
   useEffect(() => {
-    filterData(author);
-  }, [author]);
+    if (route.params && route.params.itemToEdit) {
+      const { itemToEdit } = route.params;
+      setTitle(itemToEdit.title);
+      setImage(itemToEdit.image);
+      setAuthor(itemToEdit.author);
+      setDate(itemToEdit.date);
+      setDesc(itemToEdit.desc);
+      setId(itemToEdit.id);
+      navigation.setOptions({
+        title: 'Editando noticia',
+      });
+    } else {
+      setId(null);
+      navigation.setOptions({
+        title: 'Criando noticia',
+      });
+    }
+    console.log('id', id);
+  }, [route]);
 
   function formatDate(_date) {
     if (_date) {
@@ -87,61 +92,33 @@ export default function Home({ navigation }) {
 
   function callbackImagePicker(response) {
     if (response && !response.didCancel && !response.error) {
-      setImage(response.data);
-      // Crop image for preview
-      const { height, width } = response;
-      let offsetX = 0;
-      let offsetY = 0;
-      let cropHeight = height;
-      let cropWidth = width;
-      if (width > height) {
-        cropWidth = height;
-        offsetX = (width - cropWidth) / 2;
-      } else if (height > width) {
-        cropHeight = width;
-        offsetY = (height - cropHeight) / 2;
-      }
-      ImageEditor.cropImage(response.uri, {
-        offset: { x: offsetX, y: offsetY },
-        size: { width: cropWidth, height: cropHeight },
-        displaySize: { width: 80, height: 80 },
-      }).then((croppedUrl) => {
-        RNFS.readFile(croppedUrl, 'base64').then((res) => {
-          setImageCropped(res);
-        });
-      });
+      setImage(response.uri);
     }
   }
 
   function AutocompleteField({ textError }) {
     function getAuthors() {
-      const arr = allAuthors.map((item) => {
-        return <Picker.Item label={item} value={item} />;
+      const arr = DatabaseStore.authorsList.map((item) => {
+        return <Picker.Item label={item.name} value={item} key={item.id} />;
       });
       return arr;
     }
     return (
       <>
-        <Picker
-          selectedValue={author}
-          onValueChange={(itemValue, itemIndex) => setAuthor(itemValue)}
-        >
-          <Picker.Item label="Selecione o autor" value="" />
-          {getAuthors()}
-        </Picker>
+        <Observer>
+          {() => (
+            <Picker
+              selectedValue={author}
+              onValueChange={(itemValue, itemIndex) => setAuthor(itemValue)}
+            >
+              <Picker.Item label="Selecione o autor" value={null} />
+              {getAuthors()}
+            </Picker>
+          )}
+        </Observer>
         <ErrorText textError={textError} />
       </>
     );
-  }
-
-  function authorExist(_author) {
-    for (let i = 0; i < allAuthors.length; i += 1) {
-      const authorItem = allAuthors[i];
-      if (authorItem.toLocaleLowerCase() === _author.toLocaleLowerCase()) {
-        return true;
-      }
-    }
-    return false;
   }
 
   function checkFields() {
@@ -153,11 +130,8 @@ export default function Home({ navigation }) {
       setErrorTitle('');
     }
 
-    if (!author.length) {
+    if (!author) {
       setErrorAuthor('Autor é um campo obrigatório');
-      errorCount += 1;
-    } else if (!authorExist(author)) {
-      setErrorAuthor('Autor não encontrado');
       errorCount += 1;
     } else {
       setErrorAuthor('');
@@ -172,10 +146,10 @@ export default function Home({ navigation }) {
 
     if (errorCount) {
       setErrorForm('Houve algum erro no formulário');
-      return true;
+      return false;
     }
     setErrorForm('');
-    return false;
+    return true;
   }
 
   return (
@@ -186,6 +160,7 @@ export default function Home({ navigation }) {
       <TextField
         placeholder="Titulo"
         autoFocus
+        value={title}
         onChangeText={setTitle}
         textError={errorTitle}
       />
@@ -215,13 +190,28 @@ export default function Home({ navigation }) {
       />
 
       <TextInput
+        value={desc}
         style={styles.textArea}
         placeholder="Descrição"
         multiline
         onChangeText={setDesc}
       />
       <ErrorText textError={errorForm} />
-      <Button title="Postar" onPress={() => checkFields()} />
+      <Button
+        color="#264653"
+        title={id !== null ? 'Alterar' : 'Postar'}
+        onPress={() => {
+          if (checkFields()) {
+            if (id) {
+              DatabaseStore.editNews(id, title, author, desc, date, image);
+              navigation.pop();
+            } else {
+              DatabaseStore.insertNews(title, author, desc, date, image);
+              navigation.pop();
+            }
+          }
+        }}
+      />
     </ScrollView>
   );
 }

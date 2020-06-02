@@ -3,18 +3,12 @@ import { Text, StyleSheet, Image, View, Dimensions } from 'react-native';
 import ImageEditor from '@react-native-community/image-editor';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-// const screenWidth = Dimensions.get('window').width;
-const screenHeight = Dimensions.get('window').height;
-
-export default function NewsItem({ title, author, date, imageSrc }) {
+export default function NewsItem({ title, author, date, image }) {
   // eslint-disable-next-line global-require
-  const image = require('../assets/1.jpg');
   const [imageUrl, setImageUrl] = useState('');
 
   useEffect(() => {
-    const url =
-      'https://wallup.net/wp-content/uploads/2019/09/201208-landscapes-nature-fields-hdr-photography-crops.jpg';
-    Image.getSize(url, (width, height) => {
+    Image.getSize(image, (width, height) => {
       console.log(width, height);
       let offsetX = 0;
       let offsetY = 0;
@@ -27,7 +21,7 @@ export default function NewsItem({ title, author, date, imageSrc }) {
         cropHeight = width;
         offsetY = (height - cropHeight) / 2;
       }
-      ImageEditor.cropImage(url, {
+      ImageEditor.cropImage(image, {
         offset: { x: offsetX, y: offsetY },
         size: { width: cropWidth, height: cropHeight },
         displaySize: { width: 80, height: 80 },
@@ -36,7 +30,7 @@ export default function NewsItem({ title, author, date, imageSrc }) {
         console.log('Cropped image:', croppedUrl);
       });
     });
-  }, []);
+  }, [image]);
 
   function getCroppedImage() {
     if (imageUrl.length) {
@@ -53,11 +47,11 @@ export default function NewsItem({ title, author, date, imageSrc }) {
         <View style={styles.textMetaContainer}>
           <View style={styles.metaTextItem}>
             <MaterialIcons name="person-outline" size={24} color="#757575" />
-            <Text style={styles.metaText}>Autor</Text>
+            <Text style={styles.metaText}>{author}</Text>
           </View>
           <View style={styles.metaTextItem}>
             <MaterialIcons name="access-time" size={24} color="#757575" />
-            <Text style={styles.metaText}>Data</Text>
+            <Text style={styles.metaText}>{date}</Text>
           </View>
         </View>
       </View>

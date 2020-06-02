@@ -71,7 +71,7 @@ export default function Home({ navigation }) {
                       navigation.navigate('Edit', {
                         itemToEdit: {
                           id: data.item.id,
-                          title: data.item.id,
+                          title: data.item.title,
                           author: data.item.author,
                           image: data.item.image,
                           desc: data.item.desc,

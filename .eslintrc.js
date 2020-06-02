@@ -39,6 +39,7 @@ module.exports = {
     'react/static-property-placement': 'off',
     'react/jsx-props-no-spreading': 'off',
     'react/prop-types': 'off',
+    'class-methods-use-this': 'off',
     'no-param-reassign': 'off',
     'no-console': 'off',
     "no-use-before-define": ["error", { "variables": false }]

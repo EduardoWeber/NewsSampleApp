@@ -71,7 +71,6 @@ export default function Home({ navigation, route }) {
         title: 'Criando noticia',
       });
     }
-    console.log('id', id);
   }, [route]);
 
   function formatDate(_date) {

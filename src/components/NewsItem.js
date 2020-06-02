@@ -7,7 +7,6 @@ import NewsMeta from './NewsMeta';
 const screenHeight = Dimensions.get('window').height;
 
 export default function NewsItem({ title, author, date, image }) {
-  console.log(image);
   return (
     <View style={styles.container}>
       <Image source={{ uri: image }} style={styles.image} />

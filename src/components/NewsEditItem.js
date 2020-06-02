@@ -9,7 +9,6 @@ export default function NewsItem({ title, author, date, image }) {
 
   useEffect(() => {
     Image.getSize(image, (width, height) => {
-      console.log(width, height);
       let offsetX = 0;
       let offsetY = 0;
       let cropHeight = height;
@@ -27,7 +26,6 @@ export default function NewsItem({ title, author, date, image }) {
         displaySize: { width: 80, height: 80 },
       }).then((croppedUrl) => {
         setImageUrl(croppedUrl);
-        console.log('Cropped image:', croppedUrl);
       });
     });
   }, [image]);

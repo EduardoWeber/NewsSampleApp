@@ -183,7 +183,6 @@ class DatabaseStore {
       if (newsItem.id === id) {
         const lastImage = newsItem.image;
         this.copyImage(image, id).then((imageResult) => {
-          console.log(imageResult);
           this.db.transaction((txn) => {
             txn.executeSql(
               `

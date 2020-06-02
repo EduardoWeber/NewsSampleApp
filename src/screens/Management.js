@@ -38,7 +38,6 @@ export default function Home({ navigation }) {
   }, []);
 
   function formatDate(_date) {
-    console.log(_date);
     if (_date) {
       try {
         return `${`0${_date.getDate()}`.slice(-2)}/${`0${

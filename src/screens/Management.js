@@ -82,7 +82,7 @@ export default function Home({ navigation }) {
                     />
                   </TouchableOpacity>
                 )}
-                keyExtractor={(_, index) => index.toString()}
+                keyExtractor={(data) => data.id.toString()}
                 ItemSeparatorComponent={() => <View style={styles.spacer} />}
                 renderHiddenItem={(data) => (
                   <TouchableOpacity

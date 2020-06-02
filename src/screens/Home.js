@@ -85,7 +85,7 @@ export default function Home({ navigation }) {
                     />
                   </TouchableOpacity>
                 )}
-                keyExtractor={(_, index) => index.toString()}
+                keyExtractor={(item) => item.id.toString()}
                 ItemSeparatorComponent={() => <View style={styles.spacer} />}
               />
             ) : (

@@ -6,13 +6,11 @@ import NewsMeta from './NewsMeta';
 // const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 
-export default function NewsItem({ title, author, date, imageSrc }) {
-  // eslint-disable-next-line global-require
-  const image = require('../assets/1.jpg');
-
+export default function NewsItem({ title, author, date, image }) {
+  console.log(image);
   return (
     <View style={styles.container}>
-      <Image source={image} style={styles.image} />
+      <Image source={{ uri: image }} style={styles.image} />
       <View style={styles.metaContainer}>
         <NewsMeta style={styles.shadow} author={author} date={date} />
       </View>

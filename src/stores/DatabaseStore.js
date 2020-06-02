@@ -207,6 +207,7 @@ class DatabaseStore {
                   date,
                   image: imageResult,
                 });
+                this.sortNews();
                 try {
                   if (!lastImage.startsWith('http')) {
                     RNFS.unlink(lastImage);

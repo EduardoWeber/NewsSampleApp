@@ -26,9 +26,7 @@ const App = () => {
     return (
       <Tab.Navigator
         screenOptions={({ route }) => ({
-          tabBarIcon: ({ focused, color, size }) => {
-            let iconName;
-
+          tabBarIcon: ({ color, size }) => {
             if (route.name === 'Home') {
               return <Icon name="home" size={size} color={color} />;
             }
@@ -37,6 +35,7 @@ const App = () => {
                 <IconMCI name="file-document-edit" size={size} color={color} />
               );
             }
+            return <></>;
           },
         })}
         tabBarOptions={{

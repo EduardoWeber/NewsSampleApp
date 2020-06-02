@@ -295,7 +295,7 @@ class DatabaseStore {
           'https://images.pexels.com/photos/2568906/pexels-photo-2568906.png?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
       },
       {
-        title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+        title: 'Consectetur adipiscing elit, sed do eiusmod tempor incididunt',
         author: this.getAuthorById(2),
         desc: loremIpsumGibberish,
         date: new Date(2020, 5, 2),
@@ -303,7 +303,8 @@ class DatabaseStore {
           'https://images.pexels.com/photos/897232/pexels-photo-897232.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
       },
       {
-        title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+        title:
+          'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua',
         author: this.getAuthorById(3),
         desc: loremIpsumGibberish,
         date: new Date(2020, 4, 29),
@@ -311,7 +312,8 @@ class DatabaseStore {
           'https://images.pexels.com/photos/1595104/pexels-photo-1595104.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
       },
       {
-        title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+        title:
+          'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris',
         author: this.getAuthorById(4),
         desc: loremIpsumGibberish,
         date: new Date(2020, 5, 2),

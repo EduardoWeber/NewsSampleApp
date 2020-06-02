@@ -26,6 +26,7 @@ export default function Search({ callbackFunc }) {
         <Icon name="search" size={24} color="#FFF" />
       </TouchableOpacity>
       <Modal
+        backdropTransitionOutTiming={0}
         isVisible={isModalVisible}
         onBackdropPress={() => setModalVisible(false)}
         onBackButtonPress={() => {

@@ -14,14 +14,12 @@ import NewsMeta from '../components/NewsMeta';
 const screenWidth = Dimensions.get('window').width;
 
 export default function NewsArticle({ route, navigation }) {
-  const { title, author, date, text, imageSrc } = route.params;
-
-  const image = require('../assets/1.jpg');
+  const { title, author, date, image, desc } = route.params;
 
   return (
     <ScrollView>
       <View>
-        <AutoHeightImage source={image} width={screenWidth} />
+        <AutoHeightImage source={{ uri: image }} width={screenWidth} />
         <TouchableOpacity
           style={styles.backIcon}
           onPress={() => navigation.goBack()}
@@ -33,7 +31,7 @@ export default function NewsArticle({ route, navigation }) {
         <NewsMeta author={author} date={date} />
       </View>
       <Text style={styles.title}>{title}</Text>
-      <Text style={styles.textMargin}>{text}</Text>
+      <Text style={styles.textMargin}>{desc}</Text>
     </ScrollView>
   );
 }
@@ -43,6 +41,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginHorizontal: 16,
     fontSize: 14,
+    marginBottom: 8,
   },
   title: {
     fontSize: 20,

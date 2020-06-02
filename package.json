@@ -55,5 +55,15 @@
   },
   "jest": {
     "preset": "react-native"
+  },
+  "babel": {
+    "plugins": [
+      [
+        "@babel/plugin-proposal-decorators",
+        {
+          "legacy": true
+        }
+      ]
+    ]
   }
 }

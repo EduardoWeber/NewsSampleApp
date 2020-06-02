@@ -7,13 +7,7 @@ import ErrorText from './ErrorText';
 export default function ImageCover({ image, callbackImagePicker, textError }) {
   function getImage() {
     if (image.length) {
-      return (
-        <AutoHeightImage
-          key="image_dont_do_this"
-          source={{ uri: `data:image/gif;base64,${image}` }}
-          width={140}
-        />
-      );
+      return <AutoHeightImage source={{ uri: image }} width={140} />;
     }
     return <View style={styles.imagePreview} />;
   }
@@ -24,6 +18,7 @@ export default function ImageCover({ image, callbackImagePicker, textError }) {
         {getImage()}
         <View style={styles.buttonContainer}>
           <Button
+            color="#264653"
             title="SELECIONAR CAPA"
             onPress={() =>
               ImagePicker.launchImageLibrary(

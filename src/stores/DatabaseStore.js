@@ -15,8 +15,8 @@ class DatabaseStore {
     this.dbConfig = { name: 'NewsDatabase.db' };
     this.db = openDatabase(this.dbConfig);
     this.db.transaction((txn) => {
-      // txn.executeSql(`DROP TABLE IF EXISTS "news"`, []);
-      // txn.executeSql(`DROP TABLE IF EXISTS "authors"`, []);
+      txn.executeSql(`DROP TABLE IF EXISTS "news"`, []);
+      txn.executeSql(`DROP TABLE IF EXISTS "authors"`, []);
       txn.executeSql(
         `SELECT name FROM sqlite_master WHERE type='table' AND ( name='news' or name='authors')`,
         [],
@@ -46,8 +46,10 @@ class DatabaseStore {
               [],
               () => {
                 console.log('Sucessfully created');
-                this.insertDummyAuthors();
-                // this.loadAuthors();
+                this.insertDummyAuthors().then(() => {
+                  this.insertDummyNews();
+                });
+                //  this.loadAuthors();
               },
               (error) => {
                 console.log('Error on creation', error);
@@ -85,7 +87,6 @@ class DatabaseStore {
   }
 
   loadNews() {
-    console.log('News');
     this.db.transaction((txn) => {
       txn.executeSql(`SELECT * FROM 'news'`, [], (_, results) => {
         for (let i = 0; i < results.rows.length; i += 1) {
@@ -106,7 +107,6 @@ class DatabaseStore {
 
   insertStoreNews(lastRowId, title, author, desc, date, imageUrl) {
     this.lastRowNews = lastRowId;
-    console.log('Inserting');
     this.newsList = this.newsList.concat([
       {
         id: lastRowId,
@@ -120,6 +120,11 @@ class DatabaseStore {
   }
 
   copyImage(imageUri, newName) {
+    // If it is a dummy image
+    if (imageUri.startsWith('http')) {
+      return new Promise((resolve) => resolve(imageUri));
+    }
+
     const imagePath = `${RNFS.DocumentDirectoryPath}/images/`;
     const lastDir = imageUri.split('/');
     const extension = /(?:\.([^.]+))?$/.exec(lastDir[lastDir.length - 1])[1];
@@ -154,6 +159,7 @@ class DatabaseStore {
     for (let i = 0; i < this.newsList.length; i += 1) {
       const newsItem = this.newsList[i];
       if (id === newsItem.id) {
+        this.newsList.splice(i, 1);
         this.db.transaction((txn) => {
           txn.executeSql(
             `
@@ -163,23 +169,21 @@ class DatabaseStore {
               id = ?
             ;
             `,
-            [id],
-            () => {
-              this.newsList.splice(i, 1);
-            }
+            [id]
           );
         });
+        return;
       }
     }
   }
 
   @action editNews(id, title, author, desc, date, image) {
-    console.log('image', image);
     for (let i = 0; i < this.newsList.length; i += 1) {
       const newsItem = this.newsList[i];
       if (newsItem.id === id) {
         const lastImage = newsItem.image;
         this.copyImage(image, id).then((imageResult) => {
+          console.log(imageResult);
           this.db.transaction((txn) => {
             txn.executeSql(
               `
@@ -203,7 +207,13 @@ class DatabaseStore {
                   date,
                   image: imageResult,
                 });
-                RNFS.unlink(lastImage);
+                try {
+                  if (!lastImage.startsWith('http')) {
+                    RNFS.unlink(lastImage);
+                  }
+                } catch (error) {
+                  console.log('error:', error.toString());
+                }
               },
               (tx, error) => console.log('error:', tx, error)
             );
@@ -241,7 +251,6 @@ class DatabaseStore {
             tx.executeSql('select last_insert_rowid();', [], (_, result) => {
               if (result.rows.length) {
                 const lastRowId = result.rows.item(0)['last_insert_rowid()'];
-                console.log(result.rows.item(0)['last_insert_rowid()']);
                 this.insertStoreNews(
                   lastRowId,
                   title,
@@ -273,34 +282,96 @@ class DatabaseStore {
     ]);
   }
 
-  @action insertDummyAuthors() {
+  @action insertDummyNews() {
+    const loremIpsumGibberish =
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
+    const newsArr = [
+      {
+        title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+        author: this.getAuthorById(1),
+        desc: loremIpsumGibberish,
+        date: new Date(2020, 5, 1),
+        image:
+          'https://images.pexels.com/photos/2568906/pexels-photo-2568906.png?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+      },
+      {
+        title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+        author: this.getAuthorById(2),
+        desc: loremIpsumGibberish,
+        date: new Date(2020, 5, 2),
+        image:
+          'https://images.pexels.com/photos/897232/pexels-photo-897232.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+      },
+      {
+        title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+        author: this.getAuthorById(3),
+        desc: loremIpsumGibberish,
+        date: new Date(2020, 4, 29),
+        image:
+          'https://images.pexels.com/photos/1595104/pexels-photo-1595104.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+      },
+      {
+        title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+        author: this.getAuthorById(4),
+        desc: loremIpsumGibberish,
+        date: new Date(2020, 5, 2),
+        image:
+          'https://images.pexels.com/photos/974316/pexels-photo-974316.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+      },
+    ];
+    for (let i = 0; i < newsArr.length; i += 1) {
+      const news = newsArr[i];
+      this.insertNews(
+        news.title,
+        news.author,
+        news.desc,
+        news.date,
+        news.image
+      );
+    }
+  }
+
+  @action async insertDummyAuthors() {
     const authors = ['Isabel P', 'Eduardo F', 'Luis M', 'Hugo L', 'Lucas M'];
+    const promiseArr = [];
     for (let i = 0; i < authors.length; i += 1) {
       const author = authors[i];
-      this.db.transaction((txn) => {
-        txn.executeSql(
-          `INSERT INTO "main"."authors" ("name", "enabled") VALUES (?, '1');`,
-          [author],
-          (tx) => {
-            tx.executeSql('select last_insert_rowid();', [], (_, result) => {
-              if (result.rows.length) {
-                const lastRowId = result.rows.item(0)['last_insert_rowid()'];
-                this.lastRowAuthor = lastRowId;
-                console.log('author:', lastRowId);
-                this.insertStoreAuthor(
-                  result.rows.item(0)['last_insert_rowid()'],
-                  author,
-                  1
+      promiseArr.push(
+        new Promise((resolve, reject) => {
+          this.db.transaction((txn) => {
+            txn.executeSql(
+              `INSERT INTO "main"."authors" ("name", "enabled") VALUES (?, '1');`,
+              [author],
+              (tx) => {
+                tx.executeSql(
+                  'select last_insert_rowid();',
+                  [],
+                  (_, result) => {
+                    if (result.rows.length) {
+                      const lastRowId = result.rows.item(0)[
+                        'last_insert_rowid()'
+                      ];
+                      this.lastRowAuthor = lastRowId;
+                      this.insertStoreAuthor(
+                        result.rows.item(0)['last_insert_rowid()'],
+                        author,
+                        1
+                      );
+                      resolve();
+                    }
+                  }
                 );
+              },
+              (tx, error) => {
+                console.log('Error:', error, tx);
+                reject();
               }
-            });
-          },
-          (tx, error) => {
-            console.log('Error:', error, tx);
-          }
-        );
-      });
+            );
+          });
+        })
+      );
     }
+    await Promise.all(promiseArr);
   }
 }
 

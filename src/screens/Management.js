@@ -1,52 +1,34 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SwipeListView } from 'react-native-swipe-list-view';
+import { Observer } from 'mobx-react';
 import NewsEditItem from '../components/NewsEditItem';
 import Search from '../components/Search';
-
-const DATA = [
-  {
-    author: 'Fulano',
-    date: 'Hoje',
-    title: 'Titulo da noticia',
-  },
-  {
-    author: 'Fulano',
-    date: 'Hoje',
-    title: 'Titulo muito bom',
-  },
-  {
-    author: 'Fulano',
-    date: 'Hoje',
-    title: 'Titulo muito super longo de teste longo pra ver quanto que vai dar',
-  },
-  {
-    author: 'Fulano',
-    date: 'Hoje',
-    title: 'Titulo noticia',
-  },
-];
+import DatabaseStore from '../stores/DatabaseStore';
 
 export default function Home({ navigation }) {
-  const [filteredList, setFilteredList] = useState(DATA);
-
-  function filterList(title) {
-    const newList = DATA.filter((item) => {
-      return item.title.toLocaleLowerCase().includes(title.toLocaleLowerCase());
-    });
-    setFilteredList(newList);
-  }
+  const [searchText, setSearchText] = useState('');
 
   function updateSearch(message) {
-    filterList(message);
+    setSearchText(message);
+  }
+
+  function getFilteredNews(title, newsArr) {
+    return newsArr.filter((item) => {
+      return item.title.toLocaleLowerCase().includes(title.toLocaleLowerCase());
+    });
   }
 
   React.useLayoutEffect(() => {
+    setSearchText('');
     const unsubscribe = navigation.addListener('focus', () => {
       const parentNavigation = navigation.dangerouslyGetParent();
       if (parentNavigation) {
         parentNavigation.setOptions({
-          headerRight: () => <Search callbackFunc={updateSearch} />,
+          title: 'Gerenciamento',
+          headerRight: () => (
+            <Search callbackFunc={updateSearch} key="management_search" />
+          ),
         });
       }
     });
@@ -55,54 +37,77 @@ export default function Home({ navigation }) {
     };
   }, []);
 
+  function formatDate(_date) {
+    console.log(_date);
+    if (_date) {
+      try {
+        return `${`0${_date.getDate()}`.slice(-2)}/${`0${
+          _date.getMonth() + 1
+        }`.slice(-2)}`;
+      } catch {
+        return '';
+      }
+    }
+    return '';
+  }
+
   return (
     <>
-      <SwipeListView
-        data={filteredList}
-        ListHeaderComponent={() => (
-          <TouchableOpacity style={styles.addButton}>
-            <Text style={styles.addButtonText}>ADICIONAR NOTICIA</Text>
-          </TouchableOpacity>
+      <Observer>
+        {() => (
+          <View style={styles.container}>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => navigation.navigate('Edit')}
+            >
+              <Text style={styles.addButtonText}>ADICIONAR NOTICIA</Text>
+            </TouchableOpacity>
+            {getFilteredNews(searchText, DatabaseStore.newsList).length ? (
+              <SwipeListView
+                data={getFilteredNews(searchText, DatabaseStore.newsList)}
+                renderItem={(data) => (
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() =>
+                      navigation.navigate('Edit', {
+                        itemToEdit: data.item,
+                      })
+                    }
+                  >
+                    <NewsEditItem
+                      author={data.item.author.name}
+                      date={formatDate(data.item.date)}
+                      title={data.item.title}
+                      image={data.item.image}
+                    />
+                  </TouchableOpacity>
+                )}
+                keyExtractor={(_, index) => index.toString()}
+                ItemSeparatorComponent={() => <View style={styles.spacer} />}
+                renderHiddenItem={(data) => (
+                  <TouchableOpacity
+                    style={styles.deleteButtonContainer}
+                    onPress={() => DatabaseStore.removeNews(data.item.id)}
+                  >
+                    <View style={styles.deleteButton}>
+                      <Text style={styles.deleteButtonText}>Deletar</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+                disableRightSwipe
+                rightOpenValue={-100}
+                stopRightSwipe={-110}
+              />
+            ) : (
+              <Text style={styles.noNewsText}>
+                {DatabaseStore.newsList.length
+                  ? 'Sem resultados para sua busca'
+                  : 'Sem noticias cadastradas'}
+              </Text>
+            )}
+          </View>
         )}
-        renderItem={(data, rowMap) => (
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate('Edit', data.item)}
-          >
-            <NewsEditItem
-              author={data.item.author}
-              date={data.item.date}
-              title={data.item.title}
-            />
-          </TouchableOpacity>
-        )}
-        keyExtractor={(_, index) => index.toString()}
-        ItemSeparatorComponent={() => <View style={styles.spacer} />}
-        renderHiddenItem={(data, rowMap) => (
-          <TouchableOpacity style={styles.deleteButtonContainer}>
-            <View style={styles.deleteButton}>
-              <Text style={styles.deleteButtonText}>Deletar</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-        disableRightSwipe
-        rightOpenValue={-100}
-        stopRightSwipe={-110}
-      />
-      {/* <FlatList
-        data={filteredList}
-        renderItem={({ item }) => (
-          <TouchableOpacity activeOpacity={0.6}>
-            <NewsEditItem
-              author={item.author}
-              date={item.date}
-              title={item.title}
-            />
-          </TouchableOpacity>
-        )}
-        keyExtractor={(_, index) => index.toString()}
-        ItemSeparatorComponent={() => <View style={styles.spacer} />}
-      /> */}
+      </Observer>
     </>
   );
 }
@@ -112,6 +117,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 1,
     backgroundColor: '#2A9D8F',
+  },
+  container: {
+    flex: 1,
+  },
+  noNewsText: {
+    fontSize: 16,
+    flex: 1,
+    textAlign: 'center',
+    textAlignVertical: 'center',
   },
   deleteButtonContainer: {
     backgroundColor: 'red',

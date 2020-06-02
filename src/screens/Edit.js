@@ -59,7 +59,7 @@ export default function Home({ navigation, route }) {
       setTitle(itemToEdit.title);
       setImage(itemToEdit.image);
       setAuthor(itemToEdit.author);
-      setDate(itemToEdit.date);
+      setDate(new Date(itemToEdit.date));
       setDesc(itemToEdit.desc);
       setId(itemToEdit.id);
       navigation.setOptions({

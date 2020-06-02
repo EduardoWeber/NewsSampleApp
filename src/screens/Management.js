@@ -70,7 +70,13 @@ export default function Home({ navigation }) {
                     activeOpacity={0.8}
                     onPress={() =>
                       navigation.navigate('Edit', {
-                        itemToEdit: data.item,
+                        itemToEdit: {
+                          title: data.item.title,
+                          author: data.item.author,
+                          image: data.item.image,
+                          desc: data.item.desc,
+                          date: data.item.date.toString(),
+                        },
                       })
                     }
                   >

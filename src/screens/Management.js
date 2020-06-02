@@ -70,7 +70,7 @@ export default function Home({ navigation }) {
                     onPress={() =>
                       navigation.navigate('Edit', {
                         itemToEdit: {
-                          id: data.item.title,
+                          id: data.item.id,
                           title: data.item.title,
                           author: data.item.author,
                           image: data.item.image,

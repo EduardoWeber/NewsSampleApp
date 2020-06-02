@@ -15,8 +15,8 @@ class DatabaseStore {
     this.dbConfig = { name: 'NewsDatabase.db' };
     this.db = openDatabase(this.dbConfig);
     this.db.transaction((txn) => {
-      txn.executeSql(`DROP TABLE IF EXISTS "news"`, []);
-      txn.executeSql(`DROP TABLE IF EXISTS "authors"`, []);
+      // txn.executeSql(`DROP TABLE IF EXISTS "news"`, []);
+      // txn.executeSql(`DROP TABLE IF EXISTS "authors"`, []);
       txn.executeSql(
         `SELECT name FROM sqlite_master WHERE type='table' AND ( name='news' or name='authors')`,
         [],
@@ -47,15 +47,75 @@ class DatabaseStore {
               () => {
                 console.log('Sucessfully created');
                 this.insertDummyAuthors();
+                // this.loadAuthors();
               },
               (error) => {
                 console.log('Error on creation', error);
               }
             );
+          } else {
+            console.log('Loading');
+            this.loadAuthors();
+            this.loadNews();
           }
         }
       );
     });
+  }
+
+  loadAuthors() {
+    this.db.transaction((txn) => {
+      txn.executeSql(`SELECT * FROM 'authors'`, [], (_, results) => {
+        for (let i = 0; i < results.rows.length; i++) {
+          const row = results.rows.item(i);
+          this.insertStoreAuthor(row.id, row.name, row.enabled);
+        }
+      });
+    });
+  }
+
+  getAuthorById(id) {
+    for (let i = 0; i < this.authorsList.length; i++) {
+      const author = this.authorsList[i];
+      if (author.id === id) {
+        return author;
+      }
+    }
+  }
+
+  loadNews() {
+    console.log('News');
+    this.db.transaction((txn) => {
+      txn.executeSql(`SELECT * FROM 'news'`, [], (_, results) => {
+        for (let i = 0; i < results.rows.length; i++) {
+          const row = results.rows.item(i);
+          const author = this.getAuthorById(row.author);
+          this.insertStoreNews(
+            row.id,
+            row.title,
+            author,
+            row.desc,
+            new Date(row.date),
+            row.image
+          );
+        }
+      });
+    });
+  }
+
+  insertStoreNews(lastRowId, title, author, desc, date, imageUrl) {
+    this.lastRowNews = lastRowId;
+    console.log('Inserting');
+    this.newsList = this.newsList.concat([
+      {
+        id: lastRowId,
+        title,
+        author,
+        desc,
+        date,
+        image: imageUrl,
+      },
+    ]);
   }
 
   copyImage(imageUri, newName) {
@@ -180,18 +240,15 @@ class DatabaseStore {
             tx.executeSql('select last_insert_rowid();', [], (_, result) => {
               if (result.rows.length) {
                 const lastRowId = result.rows.item(0)['last_insert_rowid()'];
-                this.lastRowNews = lastRowId;
                 console.log(result.rows.item(0)['last_insert_rowid()']);
-                this.newsList = this.newsList.concat([
-                  {
-                    id: lastRowId,
-                    title,
-                    author,
-                    desc,
-                    date,
-                    image: imageUrl,
-                  },
-                ]);
+                this.insertStoreNews(
+                  lastRowId,
+                  title,
+                  author,
+                  desc,
+                  date,
+                  imageUrl
+                );
                 this.sortNews();
               }
             });
@@ -205,7 +262,7 @@ class DatabaseStore {
     });
   }
 
-  @action insertAuthor(id, name, enabled) {
+  @action insertStoreAuthor(id, name, enabled) {
     this.authorsList = this.authorsList.concat([
       {
         id,
@@ -228,7 +285,7 @@ class DatabaseStore {
                 const lastRowId = result.rows.item(0)['last_insert_rowid()'];
                 this.lastRowAuthor = lastRowId;
                 console.log('author:', lastRowId);
-                this.insertAuthor(
+                this.insertStoreAuthor(
                   result.rows.item(0)['last_insert_rowid()'],
                   author,
                   1

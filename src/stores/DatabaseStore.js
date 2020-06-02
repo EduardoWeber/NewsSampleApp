@@ -15,8 +15,8 @@ class DatabaseStore {
     this.dbConfig = { name: 'NewsDatabase.db' };
     this.db = openDatabase(this.dbConfig);
     this.db.transaction((txn) => {
-      txn.executeSql(`DROP TABLE IF EXISTS "news"`, []);
-      txn.executeSql(`DROP TABLE IF EXISTS "authors"`, []);
+      // txn.executeSql(`DROP TABLE IF EXISTS "news"`, []);
+      // txn.executeSql(`DROP TABLE IF EXISTS "authors"`, []);
       txn.executeSql(
         `SELECT name FROM sqlite_master WHERE type='table' AND ( name='news' or name='authors')`,
         [],

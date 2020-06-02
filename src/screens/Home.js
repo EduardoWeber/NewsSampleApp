@@ -1,51 +1,53 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
+import { Observer } from 'mobx-react';
 import NewsItem from '../components/NewsItem';
 import Search from '../components/Search';
-
-const DATA = [
-  {
-    author: 'Fulano',
-    date: 'Hoje',
-    title: 'Titulo da noticia',
-  },
-  {
-    author: 'Fulano',
-    date: 'Hoje',
-    title: 'Titulo muito bom',
-  },
-  {
-    author: 'Fulano',
-    date: 'Hoje',
-    title: 'Titulo muito super longo de teste longo pra ver quanto que vai dar',
-  },
-  {
-    author: 'Fulano',
-    date: 'Hoje',
-    title: 'Titulo noticia',
-  },
-];
+import DatabaseStore from '../stores/DatabaseStore';
 
 export default function Home({ navigation }) {
-  const [filteredList, setFilteredList] = useState(DATA);
-
-  function filterList(title) {
-    const newList = DATA.filter((item) => {
-      return item.title.toLocaleLowerCase().includes(title.toLocaleLowerCase());
-    });
-    setFilteredList(newList);
-  }
+  const [searchText, setSearchText] = useState('');
 
   function updateSearch(message) {
-    filterList(message);
+    setSearchText(message);
+  }
+
+  function formatDate(_date) {
+    console.log(_date);
+    if (_date) {
+      try {
+        return `${`0${_date.getDate()}`.slice(-2)}/${`0${
+          _date.getMonth() + 1
+        }`.slice(-2)}`;
+      } catch {
+        return '';
+      }
+    }
+    return '';
+  }
+
+  function getFilteredNews(title, newsArr) {
+    return newsArr.filter((item) => {
+      return item.title.toLocaleLowerCase().includes(title.toLocaleLowerCase());
+    });
   }
 
   React.useLayoutEffect(() => {
+    setSearchText('');
     const unsubscribe = navigation.addListener('focus', () => {
       const parentNavigation = navigation.dangerouslyGetParent();
       if (parentNavigation) {
         parentNavigation.setOptions({
-          headerRight: () => <Search callbackFunc={updateSearch} />,
+          title: 'Home',
+          headerRight: () => (
+            <Search callbackFunc={updateSearch} key="home_search" />
+          ),
         });
       }
     });
@@ -56,37 +58,69 @@ export default function Home({ navigation }) {
 
   return (
     <>
-      <FlatList
-        data={filteredList}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            activeOpacity={0.6}
-            onPress={() =>
-              navigation.navigate('NewsArticle', {
-                author: item.author,
-                date: item.date,
-                title: item.title,
-              })
-            }
-          >
-            <NewsItem
-              author={item.author}
-              date={item.date}
-              title={item.title}
-            />
-          </TouchableOpacity>
+      <Observer>
+        {() => (
+          <View style={styles.container}>
+            {getFilteredNews(searchText, DatabaseStore.newsList).length ? (
+              <FlatList
+                data={getFilteredNews(searchText, DatabaseStore.newsList)}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    activeOpacity={0.6}
+                    onPress={() =>
+                      navigation.navigate('NewsArticle', {
+                        author: item.author.name,
+                        date: formatDate(item.date),
+                        title: item.title,
+                        image: item.image,
+                        desc: item.desc,
+                      })
+                    }
+                  >
+                    <NewsItem
+                      author={item.author.name}
+                      date={formatDate(item.date)}
+                      title={item.title}
+                      image={item.image}
+                    />
+                  </TouchableOpacity>
+                )}
+                keyExtractor={(_, index) => index.toString()}
+                ItemSeparatorComponent={() => <View style={styles.spacer} />}
+              />
+            ) : (
+              <Text style={styles.noNewsText}>
+                {DatabaseStore.newsList.length
+                  ? 'Sem resultados para sua busca'
+                  : 'Sem novidades por aqui agora...'}
+              </Text>
+            )}
+          </View>
         )}
-        keyExtractor={(_, index) => index.toString()}
-        ItemSeparatorComponent={() => <View style={styles.spacer} />}
-      />
+      </Observer>
     </>
   );
 }
+
+// <Text style={styles.noNewsText}>
+//   Sem novidades por aqui agora...
+// </Text>
 
 const styles = StyleSheet.create({
   spacer: {
     width: '100%',
     height: 3,
     backgroundColor: '#2A9D8F',
+  },
+  container: {
+    backgroundColor: '#2A9D8F',
+    flex: 1,
+  },
+  noNewsText: {
+    fontSize: 16,
+    flex: 1,
+    color: 'white',
+    textAlign: 'center',
+    textAlignVertical: 'center',
   },
 });

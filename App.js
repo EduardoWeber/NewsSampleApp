@@ -32,7 +32,7 @@ const App = () => {
             if (route.name === 'Home') {
               return <Icon name="home" size={size} color={color} />;
             }
-            if (route.name === 'Management') {
+            if (route.name === 'Gerenciamento') {
               return (
                 <IconMCI name="file-document-edit" size={size} color={color} />
               );
@@ -49,7 +49,7 @@ const App = () => {
         }}
       >
         <Tab.Screen name="Home" component={Home} />
-        <Tab.Screen name="Management" component={Management} />
+        <Tab.Screen name="Gerenciamento" component={Management} />
       </Tab.Navigator>
     );
   }
